@@ -1,15 +1,25 @@
 const express = require('express');
+const mongoose = require('mongoose')
 const ejs = require('ejs');
 const app = express();
+
+const Post = require('./models/Post')
+
+mongoose.connect('mongodb://127.0.0.1:27017/cleanblog-test-db');
 
 // Dinamik dosyalar views klasöründe aktif edildi.
 app.set("view engine" , "ejs");
 
 // Statik dosyalar public klasöründe aktif edildi.
 app.use(express.static('public'))
+app.use(express.urlencoded({extended:true}))
+app.use(express.json())
 
-app.get('/', (req, res) => {
-  res.render('index');
+app.get('/', async (req, res) => {
+  const posts = await Post.find({})
+  res.render('index', {
+    posts
+  });
 });
 
 app.get('/about', (req, res) => {
@@ -22,6 +32,12 @@ app.get('/add_post', (req, res) => {
 
 app.get('/post', (req, res) => {
   res.render('post');
+});
+
+app.post('/posts', async (req, res) => {
+  // console.log(req.body);  //Yapılan isteğin body kısmı console a yazdırılıyor.
+  await Post.create(req.body) // Post.js e formdan gelen bilgi gönderiliyor.
+  res.redirect('/') // Ana sayfaya yönlendiriyor ve işlemi kapatıyor.
 });
 
 const port = 3000;
