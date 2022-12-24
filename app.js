@@ -3,7 +3,6 @@ const mongoose = require('mongoose');
 const fileUpload = require('express-fileupload');
 const methodOverride = require('method-override');
 
-const fs = require('fs');
 const ejs = require('ejs');
 const app = express();
 
