@@ -3,10 +3,11 @@ const mongoose = require('mongoose');
 const fileUpload = require('express-fileupload');
 const methodOverride = require('method-override');
 
+const postControl = require('./controllers/postControl');
+const pageControl = require('./controllers/pageControl');
+
 const ejs = require('ejs');
 const app = express();
-
-const Post = require('./models/Post');
 
 mongoose.connect('mongodb://127.0.0.1:27017/cleanblog-test-db');
 
@@ -24,24 +25,15 @@ app.use(
   })
 );
 
-app.get('/', async (req, res) => {
-  const posts = await Post.find({}).sort('-dateCreated');
-  res.render('index', {
-    posts,
-  });
-});
+app.get('/', postControl.getAllPosts);
+app.post('/posts', postControl.createPost);
+app.get('/posts/:id', postControl.getPost);
+app.put('/posts/:id', postControl.updatePost);
+app.delete('/posts/:id', postControl.deletePost);
 
-app.get('/about', (req, res) => {
-  res.render('about');
-});
-
-app.get('/add_post', (req, res) => {
-  res.render('add_post');
-});
-
-app.get('/post', (req, res) => {
-  res.render('post');
-});
+app.get('/about', pageControl.aboutPage);
+app.get('/add_post', pageControl.addPostPage);
+app.get('/posts/edit/:id', pageControl.editPostPage);
 
 /*
 app.post('/posts', async (req, res) => {
@@ -50,40 +42,6 @@ app.post('/posts', async (req, res) => {
   res.redirect('/') // Ana sayfaya yönlendiriyor ve işlemi kapatıyor.
 });
 */
-
-app.post('/posts', async (req, res) => {
-  await Post.create(req.body);
-  res.redirect('/');
-});
-
-app.get('/posts/:id', async (req, res) => {
-  const post = await Post.findById(req.params.id);
-  res.render('post', {
-    post,
-  });
-});
-
-app.get('/posts/edit/:id', async (req, res) => {
-  const post = await Post.findOne({ _id: req.params.id });
-  res.render('edit', {
-    post,
-  });
-});
-
-app.put('/posts/:id', async (req, res) => {
-  const post = await Post.findOne({ _id: req.params.id });
-
-  post.title = req.body.title;
-  post.detail = req.body.detail;
-  post.save();
-
-  res.redirect(`/posts/${req.params.id}`);
-});
-
-app.delete('/posts/:id', async (req, res) => {
-  await Post.findByIdAndRemove(req.params.id);
-  res.redirect('/');
-});
 
 const port = 3000;
 
